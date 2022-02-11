@@ -1,0 +1,19 @@
+﻿@page "/reviewers/create/"
+@inject HttpClient _client
+@inject NavigationManager _navManager
+
+<h3 class="card-title">Create New Reviewers</h3>
+<hr />
+<br />
+
+<FormComponent ButtonText="Create Reviewer" reviewer="reviewer" OnValidSubmit="@CreateReviewer" />
+
+@code {
+	Reviewer reviewer = new Reviewer();
+
+	private async Task CreateReviewer()
+	{
+		await _client.PostAsJsonAsync(Endpoints.ReviewersEndpoint, reviewer);
+		_navManager.NavigateTo("/reviewers/");
+	}
+}

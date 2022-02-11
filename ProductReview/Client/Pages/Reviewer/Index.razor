@@ -1,0 +1,75 @@
+﻿@page "/reviewers/"
+@using Microsoft.AspNetCore.Authorization
+
+@inject HttpClient _client
+@inject IJSRuntime js
+@attribute [Authorize]
+
+
+<h3 class="card-title">Restaurant reviewers</h3>
+<br />
+
+<a href="/reviewers/create" class="btn btn-secondary">
+	<span class="oi oi-plus"></span>
+	Create New reviewers
+</a>
+<br />
+<br />
+
+
+@if (reviewers == null)
+{
+	<div class="alert alert-info">Loading reviewers...</div>
+}
+else
+{
+	<table class="table table-responsive">
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var reviewer in reviewers)
+			{
+				<tr>
+					<td>@reviewer.Name</td>
+					<td>
+						<a href="/reviewers/view/@reviewer.Id" class="btn btn-primary">
+							<span class="oi oi-book"></span>
+						</a>
+						<a href="/reviewers/edit/@reviewer.Id" class="btn btn-warning">
+							<span class="oi oi-pencil"></span>
+						</a>
+						<button class="btn btn-danger" @onclick="@(()=>Delete(reviewer.Id))">
+							<span class="oi oi-delete"></span>
+						</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+
+@code {
+
+	private List<Reviewer> reviewers;
+
+	protected async override Task OnInitializedAsync()
+	{
+		reviewers = await _client.GetFromJsonAsync<List<Reviewer>>("api/Reviewers");
+	}
+
+	async Task Delete(int reviewerId)
+	{
+		var reviewer = reviewers.First(q => q.Id == reviewerId);
+		var confirm = await js.InvokeAsync<bool>("confirm", $"Do you want to delete {reviewer.Name}?");
+		if (confirm)
+		{
+			await _client.DeleteAsync($"api/Reviewers/{reviewerId}");
+			await OnInitializedAsync();
+		}
+	}
+}

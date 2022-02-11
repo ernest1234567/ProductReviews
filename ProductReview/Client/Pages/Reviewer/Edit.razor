@@ -1,0 +1,23 @@
+﻿@page "/reviewers/edit/{id:int}"
+@inject HttpClient _client
+@inject NavigationManager _navManager
+
+<h3>Edit Reviewer</h3>
+
+<FormComponent ButtonText="Update" OnValidSubmit="EditReviewer" reviewer="reviewer" />
+
+@code {
+	[Parameter] public int id { get; set; }
+	Reviewer reviewer = new Reviewer();
+
+	protected async override Task OnParametersSetAsync()
+	{
+		reviewer = await _client.GetFromJsonAsync<Reviewer>($"{Endpoints.ReviewersEndpoint}/{id}");
+	}
+
+	async Task EditReviewer()
+	{
+		await _client.PutAsJsonAsync($"{Endpoints.ReviewersEndpoint}/{id}", reviewer);
+		_navManager.NavigateTo("/reviewers/");
+	}
+}

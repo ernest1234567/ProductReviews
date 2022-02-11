@@ -1,0 +1,79 @@
+﻿@page "/posts/"
+@using Microsoft.AspNetCore.Authorization
+
+@inject HttpClient _client
+@inject IJSRuntime js
+@attribute [Authorize]
+
+
+<h3 class="card-title">Restaurant Posts</h3>
+<br />
+
+<a href="/posts/create" class="btn btn-secondary">
+	<span class="oi oi-plus"></span>
+	Create New posts
+</a>
+<br />
+<br />
+
+
+@if (posts == null)
+{
+	<div class="alert alert-info">Loading posts...</div>
+}
+else
+{
+	<table class="table table-responsive">
+		<thead>
+			<tr>
+				<th>Title</th>
+				<th>Date</th>
+				<th>Rating</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var post in posts)
+			{
+			<tr>
+				<td>@post.Title</td>
+				<td>@post.Date</td>
+				<td>@post.Rating</td>
+				<td>
+					<a href="/posts/view/@post.Id" class="btn btn-primary">
+						<span class="oi oi-book"></span>
+					</a>
+					<a href="/posts/edit/@post.Id" class="btn btn-warning">
+						<span class="oi oi-pencil"></span>
+					</a>
+					<button class="btn btn-danger" @onclick="@(()=>Delete(post.Id))">
+						<span class="oi oi-delete"></span>
+					</button>
+				</td>
+			</tr>
+			}
+		</tbody>
+	</table>
+}
+
+
+@code {
+
+	private List<Post> posts;
+
+	protected async override Task OnInitializedAsync()
+	{
+		posts = await _client.GetFromJsonAsync<List<Post>>("api/Posts");
+	}
+
+	async Task Delete(int postId)
+	{
+		var post = posts.First(q => q.Id == postId);
+		var confirm = await js.InvokeAsync<bool>("confirm", $"Do you want to delete {post.Title}?");
+		if (confirm)
+		{
+			await _client.DeleteAsync($"api/Posts/{postId}");
+			await OnInitializedAsync();
+		}
+	}
+}

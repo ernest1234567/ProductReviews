@@ -1,0 +1,22 @@
+﻿@page "/posts/view/{id:int}"
+@inject HttpClient _client
+@inject NavigationManager _navManager
+
+<h3>View Colour</h3>
+
+<FormComponent post="post" OnValidSubmit="ViewPost" Disabled="true" />
+
+@code {
+	[Parameter] public int id { get; set; }
+	Post post = new Post();
+
+	protected async override Task OnParametersSetAsync()
+	{
+		post = await _client.GetFromJsonAsync<Post>($"{Endpoints.PostsEndpoint}/{id}");
+	}
+	async Task ViewPost()
+	{
+		await _client.PutAsJsonAsync($"{Endpoints.PostsEndpoint}/{id}", post);
+		_navManager.NavigateTo("/posts/");
+	}
+}

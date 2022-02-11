@@ -1,0 +1,22 @@
+﻿@page "/reviewers/view/{id:int}"
+@inject HttpClient _client
+@inject NavigationManager _navManager
+
+<h3>View Colour</h3>
+
+<FormComponent reviewer="reviewer" OnValidSubmit="ViewReviewer" Disabled="true" />
+
+@code {
+	[Parameter] public int id { get; set; }
+	Reviewer reviewer = new Reviewer();
+
+	protected async override Task OnParametersSetAsync()
+	{
+		reviewer = await _client.GetFromJsonAsync<Reviewer>($"{Endpoints.ReviewersEndpoint}/{id}");
+	}
+	async Task ViewReviewer()
+	{
+		await _client.PutAsJsonAsync($"{Endpoints.ReviewersEndpoint}/{id}", reviewer);
+		_navManager.NavigateTo("/reviewers/");
+	}
+}
